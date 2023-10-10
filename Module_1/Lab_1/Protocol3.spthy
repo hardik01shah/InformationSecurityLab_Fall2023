@@ -1,0 +1,113 @@
+theory Protocol3
+begin
+
+/* ----------------- */
+/* Equational theory */
+/* ----------------- */
+
+/* Load the built-in encryption theories */
+//Do not change the following two lines, i.e. do not add, change or remove anything (not even comments) in the following two lines.
+functions: f/2
+builtins: asymmetric-encryption, symmetric-encryption, hashing 
+
+
+
+/* -------------- */
+/* Public Key rules */
+/* -------------- */
+
+/* The following rule should be annotated by the following action facts: 
+- PubKey($A, ~ska)
+*/
+rule PubKey:  
+/*FILL IN HERE*/
+
+/* The following rule should be annotated by the following action facts: 
+- RevealKey($A, ~skA)
+*/
+//un-comment the following line for Task 1.6
+//rule RevealKey:
+/*FILL IN HERE*/
+
+
+/* -------------- */
+/* Protocol rules */
+/* -------------- */
+
+/* The following rule should be annotated by the following action facts: 
+- AliceSendsKey($A, $B, ~skA, pkB, ~Na)
+*/
+rule AliceSendsKey:
+/*FILL IN HERE*/
+
+/* The following rule should be annotated by the following action facts: 
+- BobReceivesKey($B, $A, ~skB, pkA, ~Nb, Na)
+*/
+rule BobReceivesKey:
+/*FILL IN HERE*/
+
+/* The following rule should be annotated by the following action facts: 
+- AliceReceivesNb($A, $B, ~skA, ~Na, Nb, ~ma, Kab)
+*/
+rule AliceReceivesNb:
+/*FILL IN HERE*/
+
+/* The following rule should be annotated by the following action facts: 
+- BobReceivesMa($B, $A, ~skB, ~Nb, Na, Kab, ~mb, ma)
+*/
+rule BobReceivesMa:
+/*FILL IN HERE*/
+
+/* The following rule should be annotated by the following action facts: 
+- AliceReceivesMb($A, $B, ~skA, ~Na, ~ma, Kab)
+*/
+rule AliceReceivesMb:
+/*FILL IN HERE*/
+
+
+
+/* Restrictions*/
+//You can un-comment these lines if you want to use this restriction to check equality
+//restriction Equality:
+//  "All x y #i. Eq(x,y) @i ==> x = y"
+
+
+/* ---------- */
+/* Properties */
+/* ---------- */
+
+
+/* Executability check: */
+//Make sure to add the action facts referred to by this lemma in your model
+//Do not change this lemma, i.e. do not add, change or remove anything (not even comments) in the following three lines.
+lemma executable:
+exists-trace "Ex #i #j A B ma mb.
+FinishedA(A, B, ma, mb)@i & FinishedB(B,A,ma,mb)@j& not (A=B)"
+ 
+
+//un-comment following line for Task 1.5
+//lemma secrecyA:
+/*FILL IN HERE: 
+You may only use the action facts SecretA, SecretB, K, Honest,
+and Reveal to formulate this lemma.*/
+
+//un-comment following line for Task 1.5
+//lemma secrecyB:
+/*FILL IN HERE: 
+You may only use the action facts SecretA, SecretB, K, Honest,
+and Reveal to formulate this lemma.*/
+
+//un-comment following line for Task 1.5
+//lemma non_injectiveA:
+/*FILL IN HERE: 
+You may only use the action facts CommitA, CommitB, RunningA, RunningB, Honest,
+and Reveal to formulate this lemma.*/
+
+//un-comment following line for Task 1.5
+//lemma non_injectiveB:
+/*FILL IN HERE: 
+You may only use the action facts CommitA, CommitB, RunningA, RunningB, Honest,
+and Reveal to formulate this lemma.*/
+
+
+end

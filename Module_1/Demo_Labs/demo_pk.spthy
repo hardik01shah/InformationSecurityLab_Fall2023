@@ -1,0 +1,32 @@
+theory DiffieHelman_pk
+
+begin
+
+builtins: asymmetric-encryption
+
+rule genkey:
+    [ Fr(~ska) ]
+    --[  ]->
+    [ !SecretKey($A, ~ska), !PublicKey($A, pk(~ska)), Out(pk(~ska)) ]
+
+rule keyshare:
+    [ Fr(~kab) ]
+    --[]->
+    [ !KeyA($A, ~kab), !KeyB($B, ~kab) ]
+
+rule BobSends:
+    [ Fr(~m), !PublicKey($A, pka) ]
+    --[  ]->
+    [ Out(aenc(~m, pka)) ]
+
+rule AliceGets:
+    [ In( aenc(~m, pk(~ska))), !SecretKey($Alice, ~ska) ]
+    --[  ]->
+    [  ]
+
+rule AliceGets:
+    let mdec = adec(m, ~ska)
+    in
+    [ In( m ), !SecretKey($Alice, ~ska) ]
+    --[  ]->
+    [  ]

@@ -1,0 +1,34 @@
+
+theory DiffieHellman
+begin
+
+builtins: diffie-hellman
+
+rule AliceSends:
+    [ Fr(~x) ]
+  --[  ]->
+    [ Out('g'^~x), !AliceKey($Alice, ~x) ]
+
+rule BobReceivesAndSends:
+    [ In(gx), Fr(y) ]
+  --[ FinishedBob(gx^y, $Alice, $Bob), Nequal(gx, DH_neutral) ]->
+    [ Out('g'^y), BobSharedKey(gx^y) ]
+
+rule Areceives:
+    [ In(gy), !AliceKey($Alice, ~x) ]
+  --[ FinishedAlice(gy^~x, $Alice, $Bob), Nequal(gy, DH_neutral) ]->
+    [ AliceSharedKey(gy^~x) ]
+
+restriction notequal:
+"All #i x y. Nequal(x,y)@i ==> not (x=y)"
+
+// lemma executable:
+// exists-trace "Ex #i #j k a b. FinishedBob(k)@i "
+
+lemma executable:
+exists-trace "Ex #i #j k a b. FinishedBob(k, a, b)@i & FinishedAlice(k, a, b)@j & #i<#j"
+
+lemma agreement:
+"All #i k a b. FinishedAlice(k, a, b)@i ==> Ex #j. FinishedBob(k, a, b)@j"
+
+end

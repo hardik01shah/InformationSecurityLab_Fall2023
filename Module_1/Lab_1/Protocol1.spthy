@@ -1,0 +1,86 @@
+theory Protocol1
+begin
+
+
+/* ----------------- */
+/* Equational theory */
+/* ----------------- */
+
+/* Load the built-in symmetrical encryption theory */
+//Do not change the following line, i.e. do not add, change or remove anything (not even comments) in the following line.
+builtins: symmetric-encryption
+
+/* -------------- */
+/* Share Key Setup */
+/* -------------- */
+
+/* The following rule should be annotated by the following action facts: 
+- ShareKey($A, $B, ~kAB)
+*/
+rule ShareKey:  // share a key pair between two parties.
+/*FILL IN HERE*/
+
+
+/* -------------- */
+/* Protocol rules */
+/* -------------- */
+
+/* The following rule should be annotated by the following action facts: 
+- AliceSends($A, $B, kAB, ~ma)
+*/
+rule AliceSends:
+/*FILL IN HERE*/ 
+
+/* The following rule should be annotated by the following action facts: 
+- BobReceivesAndSends($B, $A, kAB, ~mb, ma)
+*/
+rule BobReceivesAndSends:
+/*FILL IN HERE*/
+
+/* The following rule should be annotated by the following action facts: 
+- AliceReceives($A, $B, kAB, ~ma, mb)
+*/
+rule AliceReceives:
+/*FILL IN HERE*/
+
+
+
+
+/* ---------- */
+/* Properties */
+/* ---------- */
+
+
+/* Executability check: */
+//Make sure to add the action facts referred to by this lemma in your model
+//Do not change this lemma, i.e. do not add, change or remove anything (not even comments) in the following three lines.
+lemma executable:
+exists-trace "Ex #i #j A B ma mb.
+FinishedA(A, B, ma, mb)@i & FinishedB(B,A,ma,mb)@j& not (A=B)"
+ 
+//un-comment following line for Task 1.3
+//lemma secrecyA:
+/*FILL IN HERE: 
+You may only use the action facts SecretA, SecretB, and K to formulate this lemma.*/
+
+//un-comment following line for Task 1.3
+//lemma secrecyB:
+/*FILL IN HERE: 
+You may only use the action facts SecretA, SecretB, and K to formulate this lemma.*/
+
+//un-comment following line for Task 1.4
+//lemma non_injectiveA:
+/*FILL IN HERE: 
+You may only use the action facts CommitA, CommitB, RunningA, and RunningB to formulate this lemma.*/
+
+//un-comment following line for Task 1.4
+//lemma non_injectiveB:
+/*FILL IN HERE: 
+You may only use the action facts CommitA, CommitB, RunningA, and RunningB to formulate this lemma.*/
+
+
+
+end
+
+
+
