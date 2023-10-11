@@ -429,13 +429,13 @@ lemma User_Logged_In_OIDC [heuristic=S] :
 
 // If a RP receives valid credentials (i.e. username and password pair) for user $User, it cannot validate the same credentials from different User $User2.
 //un-comment following line for Task 1.2
-// lemma Unique_Credentials [heuristic = S] :
+lemma Unique_Credentials [heuristic = S] :
     /*FILL IN HERE*/
-    // "All rp username #i.
-    //     RP_accepts_credentials(rp, username)@i
-    //     ==> (Ex user #j #r.
-    //          User_sends_credentials(user, rp)@j & 
-    //          (#j<#i) & Username_belongs_to(username, user, rp)@r & (#r<#j))"
+    "All rp user1 username #i.
+        RP_Logs_User_in_Direct(rp, user1, username)@i
+        ==> not (Ex user2 #j. 
+            RP_Logs_User_in_Direct(rp, user2, username)@j & 
+            (not (user1 = user2)))"
 
 
 //If a RP receives a valid ID Token from a non-compromised IdP $IdP for user $User, it cannot validate the same ID Token for a different User $User2
