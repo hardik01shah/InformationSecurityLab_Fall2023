@@ -21,13 +21,19 @@ builtins: asymmetric-encryption, symmetric-encryption, hashing
 */
 rule PubKey:  
 /*FILL IN HERE*/
+    [Fr(~ska)]
+  --[PubKey($A, ~ska)]->
+    [!Ltk($A, ~ska), !Pk($A, pk(~ska)), Out(pk(~ska))]
 
 /* The following rule should be annotated by the following action facts: 
 - RevealKey($A, ~skA)
 */
 //un-comment the following line for Task 1.6
-//rule RevealKey:
+rule RevealKey:
 /*FILL IN HERE*/
+    [!Ltk(A, ska)]
+  --[Reveal(A)]->
+    [Out(ska)]
 
 
 /* -------------- */
@@ -39,37 +45,78 @@ rule PubKey:
 */
 rule AliceSendsKey:
 /*FILL IN HERE*/
+let
+    m_out = <$A, aenc(~Na, pkB)>
+in
+    [Fr(~tid), Fr(~Na), !Ltk($A, ~skA), !Pk($B, pkB)]
+  --[AliceSendsKey($A, $B, ~skA, pkB, ~Na)]->
+    [AliceSentKey($A, ~tid, ~skA, $B, pkB, ~Na), Out(m_out)]
 
 /* The following rule should be annotated by the following action facts: 
 - BobReceivesKey($B, $A, ~skB, pkA, ~Nb, Na)
 */
 rule BobReceivesKey:
 /*FILL IN HERE*/
+let
+    A = fst(m_in)
+    Na = adec(snd(m_in), ~skB)
+    m_out = aenc(<~Nb, f(Na, ~Nb)>, pkA)
+in
+    [Fr(~tid), Fr(~Nb), !Ltk($B, ~skB), !Pk(A, pkA), In(m_in)]
+  --[BobReceivesKey($B, A, ~skB, pkA, ~Nb, Na)]->
+    [BobSentKab($B, ~tid, ~skB, A, pkA, ~Nb, Na), Out(m_out)]
 
 /* The following rule should be annotated by the following action facts: 
 - AliceReceivesNb($A, $B, ~skA, ~Na, Nb, ~ma, Kab)
 */
 rule AliceReceivesNb:
 /*FILL IN HERE*/
+let
+    Nb = fst(adec(m_in, ~skA))
+    Kab = snd(adec(m_in, ~skA))
+    m_out = senc(<~ma, h(Nb)>, Kab)
+in
+    [Fr(~ma), AliceSentKey($A, ~tid, ~skA, $B, pkB, ~Na), In(m_in)]
+  --[AliceReceivesNb($A, $B, ~skA, ~Na, Nb, ~ma, Kab), Eq(Kab, f(~Na, Nb)), RunningA($A, $B, ~ma)]->
+    [AliceSentMa($A, ~tid, ~skA, $B, pkB, ~Na, Nb, ~ma, Kab), Out(m_out)]
+
 
 /* The following rule should be annotated by the following action facts: 
 - BobReceivesMa($B, $A, ~skB, ~Nb, Na, Kab, ~mb, ma)
 */
 rule BobReceivesMa:
 /*FILL IN HERE*/
+let
+    Kab = f(Na, ~Nb)
+    hNb = snd(sdec(m_in, Kab))
+    ma = fst(sdec(m_in, Kab))
+    m_out = senc(<~mb, h(Na)>, Kab)
+in
+    [Fr(~mb), BobSentKab($B, ~tid, ~skB, A, pkA, ~Nb, Na), In(m_in)]
+  --[BobReceivesMa($B, A, ~skB, ~Nb, Na, Kab, ~mb, ma), Eq(hNb, h(~Nb)),
+    FinishedB($B, A, ma, ~mb), SecretB(~mb), Honest(A), Honest($B), RunningB($B, A, ~mb), CommitB($B, A, ma)]->
+    [BobSentMb($B, ~tid, ~skB, A, pkA, ~Nb, Na, Kab, ~mb, ma), Out(m_out)]
 
 /* The following rule should be annotated by the following action facts: 
 - AliceReceivesMb($A, $B, ~skA, ~Na, ~ma, Kab)
 */
 rule AliceReceivesMb:
 /*FILL IN HERE*/
+let
+    hNa = snd(sdec(m_in, Kab))
+    mb = fst(sdec(m_in, Kab))
+in
+    [AliceSentMa($A, ~tid, ~skA, $B, pkB, ~Na, Nb, ~ma, Kab), In(m_in)]
+  --[AliceReceivesMb($A, $B, ~skA, ~Na, ~ma, Kab), Eq(hNa, h(~Na)),
+    FinishedA($A, $B, ~ma, mb), SecretA(~ma), Honest($A), Honest($B), CommitA($A, $B, mb)]->
+    []
 
 
 
 /* Restrictions*/
 //You can un-comment these lines if you want to use this restriction to check equality
-//restriction Equality:
-//  "All x y #i. Eq(x,y) @i ==> x = y"
+restriction Equality:
+ "All x y #i. Eq(x,y) @i ==> x = y"
 
 
 /* ---------- */
@@ -86,28 +133,44 @@ FinishedA(A, B, ma, mb)@i & FinishedB(B,A,ma,mb)@j& not (A=B)"
  
 
 //un-comment following line for Task 1.5
-//lemma secrecyA:
+lemma secrecyA:
 /*FILL IN HERE: 
 You may only use the action facts SecretA, SecretB, K, Honest,
 and Reveal to formulate this lemma.*/
+"All x #i.
+    SecretA(x) @i ==> 
+    not (Ex #j. K(x)@j)
+    | (Ex B #r. Reveal(B)@r & Honest(B)@i)"
 
 //un-comment following line for Task 1.5
-//lemma secrecyB:
+lemma secrecyB:
 /*FILL IN HERE: 
 You may only use the action facts SecretA, SecretB, K, Honest,
 and Reveal to formulate this lemma.*/
+"All x #i.
+    SecretB(x) @i ==> 
+    not (Ex #j. K(x)@j)
+    | (Ex B #r. Reveal(B)@r & Honest(B)@i)"
 
 //un-comment following line for Task 1.5
-//lemma non_injectiveA:
+lemma non_injectiveA:
 /*FILL IN HERE: 
 You may only use the action facts CommitA, CommitB, RunningA, RunningB, Honest,
 and Reveal to formulate this lemma.*/
+"All a b t #i.
+    CommitA(a,b,t) @i
+    ==> (Ex #j. RunningB(b,a,t) @j)
+    | (Ex C #r. Reveal(C)@r & Honest(C)@i)"
 
 //un-comment following line for Task 1.5
-//lemma non_injectiveB:
+lemma non_injectiveB:
 /*FILL IN HERE: 
 You may only use the action facts CommitA, CommitB, RunningA, RunningB, Honest,
 and Reveal to formulate this lemma.*/
+"All a b t #i.
+    CommitB(a,b,t) @i
+    ==> (Ex #j. RunningA(b,a,t) @j)
+    | (Ex C #r. Reveal(C)@r & Honest(C)@i)"
 
 
 end

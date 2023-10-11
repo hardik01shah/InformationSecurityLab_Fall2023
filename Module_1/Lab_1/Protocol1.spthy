@@ -19,6 +19,9 @@ builtins: symmetric-encryption
 */
 rule ShareKey:  // share a key pair between two parties.
 /*FILL IN HERE*/
+    [Fr(~kAB)]
+  --[ShareKey($A, $B, ~kAB)]->
+    [!AliceSharedKey($A, ~kAB), !BobSharedKey($B, ~kAB)]
 
 
 /* -------------- */
@@ -29,20 +32,38 @@ rule ShareKey:  // share a key pair between two parties.
 - AliceSends($A, $B, kAB, ~ma)
 */
 rule AliceSends:
-/*FILL IN HERE*/ 
+/*FILL IN HERE*/
+let
+    m_s = senc(~ma, kAB)
+in
+    [Fr(~tid), Fr(~ma), !AliceSharedKey($A, kAB)]
+  --[AliceSends($A, $B, kAB, ~ma), RunningA($A, $B, ~ma)]->
+    [AliceSent($A, ~tid, $B, kAB, ~ma), Out(m_s)]
 
 /* The following rule should be annotated by the following action facts: 
 - BobReceivesAndSends($B, $A, kAB, ~mb, ma)
 */
 rule BobReceivesAndSends:
 /*FILL IN HERE*/
+let
+    ma = sdec(m, kAB)
+    m_s = senc(~mb, kAB)
+in
+    [Fr(~tid), Fr(~mb), !BobSharedKey($B, kAB), In(m)]
+  --[BobReceivesAndSends($B, $A, kAB, ~mb, ma), FinishedB($B, $A, ma, ~mb), SecretB(~mb), RunningB($B, $A, ~mb), CommitB($B, $A, ma)]->
+    [BobSent($B, ~tid, $A, kAB, ~mb, ma), Out(m_s)]
 
 /* The following rule should be annotated by the following action facts: 
 - AliceReceives($A, $B, kAB, ~ma, mb)
 */
 rule AliceReceives:
 /*FILL IN HERE*/
-
+let
+    mb = sdec(m, kAB)
+in
+    [AliceSent($A, ~tid, $B, kAB, ~ma), !AliceSharedKey($A, kAB), In(m)]
+  --[AliceReceives($A, $B, kAB, ~ma, mb), FinishedA($A, $B, ~ma, mb), SecretA(~ma), CommitA($A, $B, mb)]->
+    []
 
 
 
@@ -59,25 +80,35 @@ exists-trace "Ex #i #j A B ma mb.
 FinishedA(A, B, ma, mb)@i & FinishedB(B,A,ma,mb)@j& not (A=B)"
  
 //un-comment following line for Task 1.3
-//lemma secrecyA:
+lemma secrecyA:
 /*FILL IN HERE: 
 You may only use the action facts SecretA, SecretB, and K to formulate this lemma.*/
+"All x #i.
+    SecretA(x) @i ==> not (Ex #j. K(x)@j)"
+
 
 //un-comment following line for Task 1.3
-//lemma secrecyB:
+lemma secrecyB:
 /*FILL IN HERE: 
 You may only use the action facts SecretA, SecretB, and K to formulate this lemma.*/
+"All x #i.
+    SecretB(x) @i ==> not (Ex #j. K(x)@j)"
 
 //un-comment following line for Task 1.4
-//lemma non_injectiveA:
+lemma non_injectiveA:
 /*FILL IN HERE: 
 You may only use the action facts CommitA, CommitB, RunningA, and RunningB to formulate this lemma.*/
+"All a b t #i.
+    CommitA(a,b,t) @i
+    ==> (Ex #j. RunningB(b,a,t) @j)"
 
 //un-comment following line for Task 1.4
-//lemma non_injectiveB:
+lemma non_injectiveB:
 /*FILL IN HERE: 
 You may only use the action facts CommitA, CommitB, RunningA, and RunningB to formulate this lemma.*/
-
+"All a b t #i.
+    CommitB(a,b,t) @i
+    ==> (Ex #j. RunningA(b,a,t) @j)"
 
 
 end
