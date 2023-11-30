@@ -3,9 +3,10 @@ import logging
 import sys
 import os
 import socket
+from ecdsa2 import ECDSA2_Params, ECDSA2, Point, bits_to_int, hash_message_to_bits
 
 # Change the port to match the challenge you're solving
-PORT = ...
+PORT = 40110
 
 # Pro tip: for debugging, set the level to logging.DEBUG if you want
 # to read all the messages back and forth from the server
@@ -45,3 +46,37 @@ def json_send(obj):
     fd.flush()
 
 # WRITE YOUR SOLUTION HERE
+
+# Parameters of the P-256 NIST curve
+a   = 0xffffffff00000001000000000000000000000000fffffffffffffffffffffffc
+b   = 0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b
+p   = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff
+P_x = 0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296
+P_y = 0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5
+q   = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551
+
+nistp256_params = ECDSA2_Params(a, b, p, P_x, P_y, q)
+ecdsa = ECDSA2(nistp256_params)
+
+# Get the public key
+json_send({"command": "get_pubkey"})
+recv1 = json_recv()
+pubkey = Point(ecdsa.curve, ecdsa.Z_q(recv1["x"]), ecdsa.Z_q(recv1["y"]))
+
+h_k = bits_to_int(hash_message_to_bits("Now you're just some value that I used to nonce"), q)
+k = ecdsa.Z_q(h_k)
+
+# Get the signature
+json_send({"command": "get_signature", "msg": "gimme the flag dummy"})
+recv2 = json_recv()
+r = ecdsa.Z_q(recv2["r"])
+s = ecdsa.Z_q(recv2["s"])
+
+h = bits_to_int(hash_message_to_bits("gimme the flag dummy"), ecdsa.q)
+privkey = ecdsa.Z_q(((1337*r)**(-1)) * ((k*s) - (h**2)))
+
+r, s = ecdsa.Sign_FixedNonce(k, privkey, "gimme the flag")
+
+# Send the signature
+json_send({"command": "solve", "r": int(r), "s": int(s)})
+print(json_recv())
