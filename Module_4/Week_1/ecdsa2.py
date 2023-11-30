@@ -245,7 +245,10 @@ class ECDSA2():
             Point: the public key
         """
         # FILL IN THIS METHOD
-        raise NotImplementedError()
+        x = self.Z_q(secrets.randbelow(self.q))
+        Q = x * self.P
+
+        return x, Q
 
 
     def Sign_FixedNonce(self, nonce: IntegerMod_int, privkey: IntegerMod_int, msg: str) -> Tuple[IntegerMod_int, IntegerMod_int]:
@@ -260,7 +263,11 @@ class ECDSA2():
             Tuple[IntegerMod_int, IntegerMod_int]: the tuple (r, s) of the signature
         """
         # FILL IN THIS METHOD
-        raise NotImplementedError()
+        h = bits_to_int(hash_message_to_bits(msg), self.q)
+        r = self.Z_q((nonce*self.P).x) 
+        s = self.Z_q((nonce**-1) * (h**2 + 1337*privkey*r))
+
+        return r, s
 
     def Sign(self, privkey, msg) -> Tuple[IntegerMod_int, IntegerMod_int]:
         """Computes an ECDSA^2 signature for a randomly chosen nonce
@@ -275,7 +282,14 @@ class ECDSA2():
             Tuple[IntegerMod_int, IntegerMod_int]: the tuple (r, s) of the signature
         """
         # FILL IN THIS METHOD
-        raise NotImplementedError()
+        r = 0
+        s = 0
+        while True:
+            k = self.Z_q(secrets.randbelow(self.q))
+            r, s = self.Sign_FixedNonce(k, privkey, msg)
+            if int(r) != 0 and int(s) != 0:
+                break
+        return r, s
 
     def Verify(self, pubkey: Point, msg: str, r: IntegerMod_int, s: IntegerMod_int) -> bool:
         """Verifies an ECDSA^2 signature
@@ -290,7 +304,22 @@ class ECDSA2():
             bool: True if the signature verifies, False otherwise
         """
         # FILL IN THIS METHOD
-        raise NotImplementedError()
+        if int(r)<1 or int(r)>=self.q or int(s)<1 or int(s)>=self.q:
+            return False
+
+        w = self.Z_q(s**(-1))
+        h = bits_to_int(hash_message_to_bits(msg), self.q)
+
+        u1 = self.Z_q(w*(h**2))
+        u2 = self.Z_q(w*r*1337)
+
+        Z = u1*self.P + u2*pubkey
+
+        if self.Z_q(Z.x) == r:
+            return True
+        else:
+            return False
+
 
 if __name__ == "__main__":
     # A small test suite for verifying that everything works
