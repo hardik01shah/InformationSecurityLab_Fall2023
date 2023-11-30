@@ -245,7 +245,7 @@ class ECDSA2():
             Point: the public key
         """
         # FILL IN THIS METHOD
-        x = self.Z_q(secrets.randbelow(self.q))
+        x = self.Z_q(1+secrets.randbelow(self.q-1))
         Q = x * self.P
 
         return x, Q
@@ -285,7 +285,7 @@ class ECDSA2():
         r = 0
         s = 0
         while True:
-            k = self.Z_q(secrets.randbelow(self.q))
+            k = self.Z_q(1+secrets.randbelow(self.q-1))
             r, s = self.Sign_FixedNonce(k, privkey, msg)
             if int(r) != 0 and int(s) != 0:
                 break
