@@ -3,6 +3,7 @@ from schnorr import Schnorr, Schnorr_Params
 from boilerplate import CommandServer, on_command
 from timing import Timer
 import string
+import hashlib
 import random
 
 num_signatures = 20
@@ -58,6 +59,17 @@ class SignServer(CommandServer):
             h, s = self.schnorr.Sign_FixedNonce(k, self.privkey, m)
             t = timer.toc()
             self.queries += 1
+            # H = hashlib.sha256()
+            # H.update(m.encode())
+            # h1 = H.digest()
+            # print(f"Hash: {h1.hex()[0]}, {h1.hex()[-1]}")
+            if int(k).bit_length() <= 256-num_leading_zeros:
+                
+                print(f"h bits: {int(h).bit_length()}")
+                print(f"s bits: {int(s).bit_length()}")
+                # print(f"Message Length: {len(m)}")
+                print(int(k).bit_length(), int(t))
+                print("+++++++++++++++++ \n")
             self.send_message({"h": int(h), "s": int(s), "msg": m, "time":int(t)})
         except (KeyError, ValueError, TypeError) as e:
             self.send_message({"error": f"Invalid parameters: {type(e).__name__} {e}"})

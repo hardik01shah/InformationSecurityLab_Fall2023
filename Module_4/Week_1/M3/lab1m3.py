@@ -3,9 +3,10 @@ import logging
 import sys
 import os
 import socket
+from matplotlib import pyplot as plt
 
 # Change the port to match the challenge you're solving
-PORT = ...
+PORT = 40130
 
 # Pro tip: for debugging, set the level to logging.DEBUG if you want
 # to read all the messages back and forth from the server
@@ -45,3 +46,40 @@ def json_send(obj):
     fd.flush()
 
 # WRITE YOUR SOLUTION HERE
+store = {}
+# t_sum = 0
+# times = []
+# scores = []
+for i in range(7500):
+    json_send({"command": "get_signature"})
+    recv1 = json_recv()
+    h = recv1["h"]
+    s = recv1["s"]
+    msg = recv1["msg"]
+    time = recv1["time"]    
+
+    store[time] = (h, s, msg)
+
+    # score = (t_sum/(i+1)) - time
+    # t_sum += time
+
+    # times.append(time)
+    # scores.append(score)
+
+time_list = list(store.keys())
+time_list.sort()
+time_list = time_list[:20]
+
+msgs = []
+for t in time_list:
+    msgs.append(store[t][2])
+
+json_send({"command": "solve", "messages": msgs})
+print(json_recv())
+
+# plt.scatter([*range(len(times))], times, label="time")
+# t_avg = t_sum/len(times)
+# scores = [t_avg - t for i, t in enumerate(times)]
+# plt.scatter([*range(len(scores))], scores, label="score")
+# plt.legend()
+# plt.show()

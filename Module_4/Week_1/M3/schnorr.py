@@ -169,7 +169,7 @@ class Point:
             raise TypeError(f'Unsupported operand type(s) for scalar multiplication: {type(other)}')
 
         result = [PointInf(self.curve), self]
-
+        print(len(scalar.bits()))
         # iterate over all bits of "scalar" starting by the MSB
         for bit in reversed(scalar.bits()):
             # time.sleep(1e-4) # amplify the side channel
