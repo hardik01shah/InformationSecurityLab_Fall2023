@@ -46,11 +46,14 @@ def json_send(obj):
     fd.flush()
 
 # WRITE YOUR SOLUTION HERE
+# 2000 - 96%
+# 2100 - 97%
+NUM_SIGNATURES = 4000
 store = {}
-# t_sum = 0
-# times = []
-# scores = []
-for i in range(7500):
+t_sum = 0
+times = []
+scores = []
+for i in range(NUM_SIGNATURES):
     json_send({"command": "get_signature"})
     recv1 = json_recv()
     h = recv1["h"]
@@ -60,11 +63,8 @@ for i in range(7500):
 
     store[time] = (h, s, msg)
 
-    # score = (t_sum/(i+1)) - time
-    # t_sum += time
-
-    # times.append(time)
-    # scores.append(score)
+    t_sum += time
+    times.append(time)
 
 time_list = list(store.keys())
 time_list.sort()
