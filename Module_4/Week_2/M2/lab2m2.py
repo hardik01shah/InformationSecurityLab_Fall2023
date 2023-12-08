@@ -62,7 +62,7 @@ schnorr = Schnorr(nistp256_params)
 
 num_leaked_bits = 8
 max_querries = 60
-NUM_SIGNATURES = 10000
+NUM_SIGNATURES = 10000  # 99% on 1000 runs
 store = {}
 t_sum = 0
 times = []
