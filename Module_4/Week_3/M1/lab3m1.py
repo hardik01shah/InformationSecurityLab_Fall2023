@@ -69,7 +69,6 @@ json_send({"command": "export_p", "identifier": "key1"})
 recv1 = json_recv()
 
 obfuscated_p = recv1["obfuscated_p"]
-print("Length of obfuscated_p: ", len(obfuscated_p))
 
 # 768 LSB of 1024 bit p leaked
 p_ = int(bytes.fromhex(obfuscated_p[512:]), 2)
