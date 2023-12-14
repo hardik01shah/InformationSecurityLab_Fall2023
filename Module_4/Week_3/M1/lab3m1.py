@@ -4,6 +4,8 @@ import sys
 import os
 import socket
 from sage.all import Zmod, PolynomialRing, matrix, ZZ, ideal, QQ, Integer 
+from math import log2, ceil, gcd
+from Crypto.Hash import SHA256
 
 # Change the port to match the challenge you're solving
 PORT = 40310
@@ -47,40 +49,57 @@ def json_send(obj):
 
 # WRITE YOUR SOLUTION HERE
 
-# get public key
-json_send({"command": "get_pubkey"})
-recv = json_recv()
-n = Integer(recv["n"])
-e = Integer(recv["e"])
+# generate new keys with different bit length
+def gen_key(bit_length, identifier):
+    json_send({"command": "gen_key", "bit_length": bit_length, "identifier": identifier})
+    return json_recv()
 
-# send command to get ciphertext
-json_send({"command": "get_ciphertext"})
+# get the public keys
+def get_pubkey(identifier):
+    json_send({"command": "get_pubkey", "identifier": identifier})
+    return json_recv()
 
-# receive ciphertext
-recv = json_recv()
-ciphertext = int.from_bytes(bytes.fromhex(recv["ciphertext"]))
+gen_key(512, "key1")
+gen_key(2048, "key1")
 
-padding = int.from_bytes(bytes([111] * 111))
+pub_key = get_pubkey("key1")
 
-R = PolynomialRing(Zmod(n), 1, 'x')
+# get p
+json_send({"command": "export_p", "identifier": "key1"})
+recv1 = json_recv()
+
+obfuscated_p = recv1["obfuscated_p"]
+print("Length of obfuscated_p: ", len(obfuscated_p))
+
+# 768 LSB of 1024 bit p leaked
+p_ = int(bytes.fromhex(obfuscated_p[512:]), 2)
+print("p_: ", p_)
+
+N = int(pub_key["n"])
+e = int(pub_key["e"])
+
+R = PolynomialRing(Zmod(N), 1, 'x')
 x = R.gen()
-F = ((2**888)*x + padding)**e - ciphertext
+F = (2**768)*x + p_
 
 # make the polynomial monic
-F = (F*((Zmod(n)(2**888))**(-e)))
+F = (F*((Zmod(N)(2**768))**(-1)))
 P = F.change_ring(ZZ)
-assert P.coefficient({x:3}) == 1
+
+assert P.coefficient({x:1}) == 1
+p_ = P.coefficient({x:0})
 
 # construct B
 B = matrix(ZZ, 4, 4)
-X = Integer(2**128)
-B[0,0] = n
-B[1,1] = n*X
-B[2,2] = n*(X**2)
+X = Integer(2**256)
+
+B[0,0] = N
+B[1,0] = p_
+B[1,1] = X
+B[2,1] = p_*X
+B[2,2] = X**2
+B[3,2] = p_*(X**2)
 B[3,3] = X**3
-B[3,0] = P.coefficient({x:0})
-B[3,1] = P.coefficient({x:1})*X
-B[3,2] = P.coefficient({x:2})*(X**2)
 
 B = B.LLL()
 
@@ -100,16 +119,27 @@ I = ideal(P_new.change_ring(QQ))
 
 # get roots
 roots = I.variety(ring=ZZ)
-secret = None
+print(roots)
+x0 = None
 for root in roots:
     if int(root['x']) < int(X):
-        secret = int(root['x'])
+        x0 = int(root['x'])
         break
-num_bytes = (secret.bit_length() + 7) // 8
-secret = secret.to_bytes(num_bytes, byteorder='big').decode('ascii')
+# print(int(p_) + x0)
+# print(N%(int(p_) + x0))
+p = gcd(int(p_) + x0, int(N))
+q = int(N//p)
 
-# send command to solve
-json_send({"command": "solve", "message": secret})
+assert p*q == N
+
+phi = (p-1) * (q-1)
+Zphi = Zmod(phi)
+d = 1/Zphi(e)
+h = int.from_bytes(SHA256.new(b"gimme the flag").digest())
+s = Zmod(N)(h)**d
+
+# solve
+json_send({"command": "solve", "identifier": "key1", "signature": int(s)})
 
 # receive flag
 print(json_recv())
