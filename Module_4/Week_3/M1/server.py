@@ -161,4 +161,4 @@ class RSAExportingServer(CommandServer):
 
 if __name__ == "__main__":
     flag = "flag{test_flag}"
-    RSAExportingServer.start_server("0.0.0.0", 40301, flag=flag)
+    RSAExportingServer.start_server("0.0.0.0", 40310, flag=flag)
