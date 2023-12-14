@@ -3,7 +3,7 @@ import logging
 import sys
 import os
 import socket
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 # Change the port to match the challenge you're solving
 PORT = 40130

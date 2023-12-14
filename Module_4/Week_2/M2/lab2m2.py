@@ -5,7 +5,7 @@ import os
 import socket
 from schnorr import Schnorr, Schnorr_Params
 from sage.all import matrix, vector, ZZ
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 # Change the port to match the challenge you're solving
 PORT = 40220
