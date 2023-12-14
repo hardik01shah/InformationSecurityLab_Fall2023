@@ -100,7 +100,7 @@ norms_sorted = sorted(norms)
 min2_norm = norms_sorted[1]
 indx = norms.index(min2_norm)
 
-f = B_p.LLL()[indx][:-1]
+f = B_p[indx][:-1]
 v = U[:-1] - f
 
 priv_key = schnorr.Z_q(v[-1])
