@@ -73,7 +73,6 @@ print("Length of obfuscated_p: ", len(obfuscated_p))
 
 # 768 LSB of 1024 bit p leaked
 p_ = int(bytes.fromhex(obfuscated_p[512:]), 2)
-print("p_: ", p_)
 
 N = int(pub_key["n"])
 e = int(pub_key["e"])
@@ -119,14 +118,12 @@ I = ideal(P_new.change_ring(QQ))
 
 # get roots
 roots = I.variety(ring=ZZ)
-print(roots)
 x0 = None
 for root in roots:
     if int(root['x']) < int(X):
         x0 = int(root['x'])
         break
-# print(int(p_) + x0)
-# print(N%(int(p_) + x0))
+
 p = gcd(int(p_) + x0, int(N))
 q = int(N//p)
 
