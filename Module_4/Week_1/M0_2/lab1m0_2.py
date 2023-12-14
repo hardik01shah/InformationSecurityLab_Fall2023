@@ -74,7 +74,7 @@ for _ in range(128):
     else:
         json_send({"command": "solve", "b": 0})
     recv3 = json_recv()
-    print(recv3)
+    # print(recv3)
 
 json_send({"command": "flag"})
 print(json_recv())
